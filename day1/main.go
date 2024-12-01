@@ -59,7 +59,7 @@ func part2() int {
 	scanner := bufio.NewScanner(f)
 	var n1 []int
 	m := make(map[int]int)
-	// var n2 []int
+
 	totalItems := 0
 	res := 0
 
@@ -75,7 +75,7 @@ func part2() int {
 		}
 		n1 = append(n1, num1)
 		m[num2] = m[num2] + 1
-		// n2 = append(n2, num2)
+
 		totalItems += 1
 	}
 
