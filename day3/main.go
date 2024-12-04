@@ -8,6 +8,19 @@ import (
 	"regexp"
 )
 
+func mul(s string, regexNum *regexp.Regexp) int {
+	nums := regexNum.FindAllString(s, -1)
+	n1, e := strconv.Atoi(nums[0])
+	if e != nil {
+		panic(e)
+	}
+	n2, e := strconv.Atoi(nums[1])
+	if e != nil {
+		panic(e)
+	}
+	return n1 * n2
+}
+
 func part1() int {
 	f, err := os.Open("input.txt")
 	if err != nil {
@@ -24,34 +37,10 @@ func part1() int {
 		l := scanner.Text()
 		matches := regex.FindAllString(l, -1)
 		for _, s := range matches {
-			nums := regexNum.FindAllString(s, -1)
-			n1, e := strconv.Atoi(nums[0])
-			if e != nil {
-				panic(e)
-			}
-			n2, e := strconv.Atoi(nums[1])
-			if e != nil {
-				panic(e)
-			}
-			res += n1 * n2
+			res += mul(s, regexNum)
 		}
 	}
 	return res
-}
-
-func mul(s string, regexNum *regexp.Regexp) int {
-	nums := regexNum.FindAllString(s, -1)
-	n1, e := strconv.Atoi(nums[0])
-	if e != nil {
-		panic(e)
-	}
-	n2, e := strconv.Atoi(nums[1])
-	if e != nil {
-		panic(e)
-	}
-	return n1 * n2
-	/*fmt.Println(s)
-	return 0*/
 }
 
 func part2() int {
