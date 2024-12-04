@@ -63,12 +63,14 @@ func part1() int {
 	return res
 }
 
-func checkSafe(n []int) int {
-	l := len(n)
+func checkSafe(nu []int) int {
+	l := len(nu)
 	res := 0
 	safeFound := false
 	for i := 0; i < l; i++ {
 		if !safeFound {
+			n := make([]int, len(nu))
+			copy(n, nu)
 			safe := true
 			nums := append(n[:i], n[i+1:]...)
 			// Check if sequence is ascend or descend
@@ -101,6 +103,7 @@ func checkSafe(n []int) int {
 				res = 1
 				safeFound = true
 			}
+			// fmt.Printf("%d, %v, safe %t\n", i, nums, safe)
 		}
 	}
 	return res
