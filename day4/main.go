@@ -4,24 +4,11 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"regexp"
-	"strconv"
 	"strings"
 )
 
-func mul(s string, regexNum *regexp.Regexp) int {
-	nums := regexNum.FindAllString(s, -1)
-	n1, e := strconv.Atoi(nums[0])
-	if e != nil {
-		panic(e)
-	}
-	n2, e := strconv.Atoi(nums[1])
-	if e != nil {
-		panic(e)
-	}
-	return n1 * n2
-}
-
+// Thx to the man 
+// https://youtu.be/L8lNcd9yQuY?si=gwaQBI4V3rs5Aw9P
 func processXmas(x int, y int, w int, h int, mem [][]string, dir []int) int {
 	res := 1
 	ex := "XMAS"
@@ -47,13 +34,11 @@ func processMas(x int, y int, w int, h int, mem [][]string, dir []int) int {
 	res := 1
 	ex := "MAS"
 	buff := ""
-	
-	fmt.Printf("Direction: %v\n", dir)
+
 	for i, v := range ex {
 		xx := x + i * dir[0]
 		yy := y + i * dir[1]
 		if xx >= 0 && xx < h && yy >= 0 && yy < w {
-			fmt.Printf("%s\n", mem[xx][yy])
 			if mem[xx][yy] != string(v) {
 				res = 0
 			} else {
@@ -64,7 +49,6 @@ func processMas(x int, y int, w int, h int, mem [][]string, dir []int) int {
 	if ex != buff {
 		res = 0
 	}
-	fmt.Printf("Result: %d\n", res)
 	return res
 }
 
