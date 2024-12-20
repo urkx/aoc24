@@ -1,0 +1,253 @@
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+)
+
+type Solution struct {
+	result int
+	list []string
+	inputTotal int
+	wrong []string
+	m map[int]*RuleSet
+}
+
+func StrToInt(s string) int {
+	i, e := strconv.Atoi(s)
+	if e != nil {
+		panic(e)
+	}
+	return i
+}
+
+func StrToIntArr(s string) []int {
+	res := make([]int, 0)
+	sArr := strings.Split(s, ",")
+	for _, v := range sArr {
+		res = append(res, StrToInt(v))
+	}
+	return res
+}
+
+type Rule struct{
+	first int
+	last int
+}
+
+func (r *Rule) check(update []int) bool {
+	firstIdx := 0
+	firstFound := false
+	lastIdx := 0
+	lastFound := false
+
+	for i, v := range update {
+		if r.first == v {
+			firstIdx = i
+			firstFound = true
+		}
+		if r.last == v {
+			lastIdx = i
+			lastFound = true
+		}
+	}
+
+	if firstFound && lastFound {
+		return firstIdx < lastIdx
+	} else {
+		return true
+	}
+	
+}
+
+// Returns indexes for wrong elements
+func (r *Rule) reportWrong(update []int) []int {
+	firstIdx := 0
+	firstFound := false
+	lastIdx := 0
+	lastFound := false
+
+	for i, v := range update {
+		if r.first == v {
+			firstIdx = i
+			firstFound = true
+		}
+		if r.last == v {
+			lastIdx = i
+			lastFound = true
+		}
+	}
+
+	if firstFound && lastFound && firstIdx > lastIdx{
+		return []int{firstIdx, lastIdx}
+	} else {
+		return []int{}
+	}
+}
+
+type RuleSet struct {
+	set []Rule
+}
+
+func (s *RuleSet) AddRule(r Rule) {
+	s.set = append(s.set, r)
+}
+
+func checkUpdate(s string, m map[int]*RuleSet) bool {
+	res := true
+	pageNum := StrToIntArr(s)
+	
+	for _, u := range pageNum[:len(pageNum)-1] {
+		if m[u] != nil {
+			rs := m[u].set
+			for _, r := range rs {
+				res = res && r.check(pageNum)
+			}
+		} else {
+			res = false
+		}
+	}
+	
+	return res
+}
+
+func checkUpdate2(pages []int, m map[int]*RuleSet) bool {
+	res := true
+	
+	for _, u := range pages[:len(pages)-1] {
+		if m[u] != nil {
+			rs := m[u].set
+			for _, r := range rs {
+				res = res && r.check(pages)
+			}
+		} else {
+			res = false
+		}
+	}
+	
+	return res
+}
+
+func part1() Solution {
+	f, err := os.Open("input.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	res := 0
+	m := make(map[int]*RuleSet)
+	li := make([]string, 0)
+	wrong := make([]string, 0)
+	total := 0
+	for scanner.Scan() {
+		l := scanner.Text()
+		// Is Rule
+		if strings.ContainsRune(l, '|') {
+			s := strings.Split(l, "|")
+			i := StrToInt(s[0])
+			j := StrToInt(s[1])
+
+			r := Rule{first: i, last: j }
+			if m[i] == nil {
+				b := []Rule{r}
+				rs := RuleSet{set: b}
+				m[i] = &rs
+			} else {
+				rs := m[i]
+				rs.set = append(rs.set, r)
+			}
+		} else if l != "" { // Is update
+			total += 1
+			if checkUpdate(l, m) {
+				lAux := strings.Split(l, ",")
+				li = append(li, l)
+				res += StrToInt(lAux[len(lAux)/2])
+			} else {
+				wrong = append(wrong, l)
+			}
+		}
+		
+	}
+
+	return Solution{result: res, list:li, inputTotal: total, wrong: wrong, m: m}
+}
+
+func fixUpdate(update *[]int, m map[int]*RuleSet) {
+	
+	// for _, u := range (*update)[:len(*update)-1] {
+	for _, u := range *update {
+		if m[u] != nil {
+			rs := m[u].set
+			for _, r := range rs {
+				for !r.check(*update) {
+					idxs := r.reportWrong(*update)
+					aux := (*update)[idxs[0]]
+					(*update)[idxs[0]] = (*update)[idxs[1]]
+					(*update)[idxs[1]] = aux
+				}
+			}
+		}
+	}
+}
+
+func part2(s Solution) Solution {
+	res := 0
+	//m := make(map[int]*RuleSet)
+	lu := make([]string, 0)
+	total := 0
+
+	/*for scanner.Scan() {
+		l := scanner.Text()
+		// Is Rule
+		if strings.ContainsRune(l, '|') {
+			s := strings.Split(l, "|")
+			i := StrToInt(s[0])
+			j := StrToInt(s[1])
+
+			r := Rule{first: i, last: j }
+			if m[i] == nil {
+				b := []Rule{r}
+				rs := RuleSet{set: b}
+				m[i] = &rs
+			} else {
+				rs := m[i]
+				rs.set = append(rs.set, r)
+			}
+		} else if l != "" { // Is update
+			total += 1
+			update := StrToIntArr(l)
+			if !checkUpdate2(update, m) {
+				lu = append(lu, l)
+				fixUpdate(&update, m)
+				res += update[len(update)/2]
+			}
+		}
+		
+	}*/
+
+	for _, v := range s.wrong {
+		total += 1
+		update := StrToIntArr(v)
+		lu = append(lu, v)
+		fixUpdate(&update, s.m)
+		res += update[len(update)/2]
+	}
+
+	return Solution{result: res, list: lu, inputTotal: total, wrong: s.wrong, m: s.m}
+}
+
+func main() {
+	fmt.Println("AOC 2024 - Day 5")
+	fmt.Println("")
+
+	p1 := part1()
+	p2 := part2(p1)
+
+	fmt.Printf("Part 1 solution: %d\n", p1.result)
+	fmt.Printf("Part 2 solution: %d\n", p2.result)
+}
